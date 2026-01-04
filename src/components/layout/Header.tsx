@@ -100,7 +100,7 @@ export function Header() {
 
           {/* Actions */}
           <div className="flex items-center gap-2 pl-4 border-l border-border">
-            <FilterPopover filters={filters} onFiltersChange={setFilters} />
+            <FilterPopover filters={filters} onFiltersChange={setFilters} teamMembers={teamMembers} />
             <NotificationsPopover />
             <Button
               variant="outline"

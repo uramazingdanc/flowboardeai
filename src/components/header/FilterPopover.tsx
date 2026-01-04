@@ -9,11 +9,13 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { useProject, TaskFilters } from '@/contexts/ProjectContext';
+import { TaskFilters } from '@/contexts/ProjectContext';
+import { TeamMember } from '@/types/kanban';
 
 interface FilterPopoverProps {
   filters: TaskFilters;
   onFiltersChange: (filters: TaskFilters) => void;
+  teamMembers: TeamMember[];
 }
 
 const priorityOptions = [
@@ -30,8 +32,7 @@ const columnOptions = [
   { value: 'done', label: 'Done' },
 ];
 
-export function FilterPopover({ filters, onFiltersChange }: FilterPopoverProps) {
-  const { teamMembers } = useProject();
+export function FilterPopover({ filters, onFiltersChange, teamMembers }: FilterPopoverProps) {
   const [open, setOpen] = useState(false);
 
   const activeFilterCount =
