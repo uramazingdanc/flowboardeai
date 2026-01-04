@@ -22,7 +22,6 @@ export interface Task {
   project_id: string;
   dueDate?: string;
   tags: string[];
-  google_calendar_event_id?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -37,7 +36,6 @@ export interface DbTask {
   project_id: string;
   due_date: string | null;
   tags: string[] | null;
-  google_calendar_event_id: string | null;
   created_at: string;
   updated_at: string;
 }

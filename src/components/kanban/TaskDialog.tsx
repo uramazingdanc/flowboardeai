@@ -19,8 +19,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch';
-import { CalendarDays } from 'lucide-react';
 
 interface TaskDialogProps {
   open: boolean;
@@ -62,8 +60,6 @@ export function TaskDialog({
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [dueDate, setDueDate] = useState('');
   const [tags, setTags] = useState('');
-  const [syncToCalendar, setSyncToCalendar] = useState(false);
-
   useEffect(() => {
     if (task) {
       setTitle(task.title);
@@ -73,7 +69,6 @@ export function TaskDialog({
       setAssigneeId(task.assignee_id || task.assignee?.id || '');
       setDueDate(task.dueDate || '');
       setTags(task.tags.join(', '));
-      setSyncToCalendar(!!task.google_calendar_event_id);
     } else {
       setTitle('');
       setDescription('');
@@ -82,7 +77,6 @@ export function TaskDialog({
       setAssigneeId('');
       setDueDate('');
       setTags('');
-      setSyncToCalendar(false);
     }
   }, [task, defaultColumnId, open]);
 
@@ -224,19 +218,6 @@ export function TaskDialog({
               placeholder="design, frontend, urgent..."
             />
           </div>
-
-          {dueDate && (
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Sync to Google Calendar</span>
-              </div>
-              <Switch
-                checked={syncToCalendar}
-                onCheckedChange={setSyncToCalendar}
-              />
-            </div>
-          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

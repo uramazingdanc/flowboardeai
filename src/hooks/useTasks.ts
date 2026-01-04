@@ -26,7 +26,6 @@ function mapDbTaskToTask(dbTask: DbTask, profiles: Profile[]): Task {
     project_id: dbTask.project_id,
     dueDate: dbTask.due_date || undefined,
     tags: dbTask.tags || [],
-    google_calendar_event_id: dbTask.google_calendar_event_id || undefined,
     createdAt: dbTask.created_at,
     updatedAt: dbTask.updated_at,
   };
@@ -145,8 +144,6 @@ export function useTasks(projectId: string | null) {
     if (updates.assignee_id !== undefined) dbUpdates.assignee_id = updates.assignee_id || null;
     if (updates.dueDate !== undefined) dbUpdates.due_date = updates.dueDate || null;
     if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
-    if (updates.google_calendar_event_id !== undefined) 
-      dbUpdates.google_calendar_event_id = updates.google_calendar_event_id || null;
 
     const { error } = await supabase
       .from('tasks')
