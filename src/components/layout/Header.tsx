@@ -2,7 +2,7 @@ import { Search, Bell, Share2, Filter, Plus, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { teamMembers, currentProject } from '@/data/mockData';
+import { useProject } from '@/contexts/ProjectContext';
 import {
   Tooltip,
   TooltipContent,
@@ -15,13 +15,19 @@ interface HeaderProps {
 }
 
 export function Header({ onAddTask, onInvite }: HeaderProps) {
+  const { currentProject, teamMembers } = useProject();
+
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
       {/* Left Section */}
       <div className="flex items-center gap-6">
         <div>
-          <h1 className="text-xl font-bold text-foreground">{currentProject.name}</h1>
-          <p className="text-sm text-muted-foreground">{currentProject.description}</p>
+          <h1 className="text-xl font-bold text-foreground">
+            {currentProject?.name || 'No Project Selected'}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {currentProject?.description || 'Create a project to get started'}
+          </p>
         </div>
       </div>
 
@@ -86,7 +92,7 @@ export function Header({ onAddTask, onInvite }: HeaderProps) {
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          <Button size="sm" className="gap-2" onClick={onAddTask}>
+          <Button size="sm" className="gap-2" onClick={onAddTask} disabled={!currentProject}>
             <Plus className="h-4 w-4" />
             Add Task
           </Button>

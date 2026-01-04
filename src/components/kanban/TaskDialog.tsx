@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Task, ColumnId, Priority, TeamMember } from '@/types/kanban';
+import { Task, ColumnId, Priority, Profile } from '@/types/kanban';
 import {
   Dialog,
   DialogContent,
@@ -19,14 +19,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { teamMembers } from '@/data/mockData';
+import { Switch } from '@/components/ui/switch';
+import { CalendarDays } from 'lucide-react';
 
 interface TaskDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   task?: Task | null;
   defaultColumnId?: ColumnId;
-  onSave: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> | Partial<Task>) => void;
+  teamMembers: { id: string; name: string; avatar: string }[];
+  onSave: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  onUpdate?: (taskId: string, updates: Partial<Task>) => void;
 }
 
 const priorities: { value: Priority; label: string }[] = [
@@ -48,7 +51,9 @@ export function TaskDialog({
   onOpenChange,
   task,
   defaultColumnId = 'todo',
+  teamMembers,
   onSave,
+  onUpdate,
 }: TaskDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -57,6 +62,7 @@ export function TaskDialog({
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [dueDate, setDueDate] = useState('');
   const [tags, setTags] = useState('');
+  const [syncToCalendar, setSyncToCalendar] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -64,9 +70,10 @@ export function TaskDialog({
       setDescription(task.description);
       setColumnId(task.columnId);
       setPriority(task.priority);
-      setAssigneeId(task.assignee?.id || '');
+      setAssigneeId(task.assignee_id || task.assignee?.id || '');
       setDueDate(task.dueDate || '');
       setTags(task.tags.join(', '));
+      setSyncToCalendar(!!task.google_calendar_event_id);
     } else {
       setTitle('');
       setDescription('');
@@ -75,13 +82,13 @@ export function TaskDialog({
       setAssigneeId('');
       setDueDate('');
       setTags('');
+      setSyncToCalendar(false);
     }
   }, [task, defaultColumnId, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const assignee = teamMembers.find((m) => m.id === assigneeId);
     const tagArray = tags
       .split(',')
       .map((t) => t.trim())
@@ -92,15 +99,16 @@ export function TaskDialog({
       description,
       columnId,
       priority,
-      assignee,
+      assignee_id: assigneeId === 'unassigned' ? undefined : assigneeId || undefined,
       dueDate: dueDate || undefined,
       tags: tagArray,
+      project_id: task?.project_id || '',
     };
 
-    if (task) {
-      onSave({ id: task.id, ...taskData });
+    if (task && onUpdate) {
+      onUpdate(task.id, taskData);
     } else {
-      onSave(taskData);
+      onSave(taskData as Omit<Task, 'id' | 'createdAt' | 'updatedAt'>);
     }
 
     onOpenChange(false);
@@ -216,6 +224,19 @@ export function TaskDialog({
               placeholder="design, frontend, urgent..."
             />
           </div>
+
+          {dueDate && (
+            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Sync to Google Calendar</span>
+              </div>
+              <Switch
+                checked={syncToCalendar}
+                onCheckedChange={setSyncToCalendar}
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -10,15 +10,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Copy, Check, Link, Mail, Users } from 'lucide-react';
+import { Copy, Check, Link, Mail, Users, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface InviteDialogProps {
   open: boolean;
@@ -26,22 +20,28 @@ interface InviteDialogProps {
 }
 
 export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
+  const { inviteMember } = useProject();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('member');
   const [copied, setCopied] = useState(false);
+  const [inviting, setInviting] = useState(false);
 
-  const shareLink = 'https://flowboard.app/invite/abc123xyz';
+  const shareLink = window.location.origin;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareLink);
     setCopied(true);
-    toast.success('Invite link copied to clipboard!');
+    toast.success('Link copied to clipboard!');
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSendInvite = () => {
-    if (email) {
-      toast.success(`Invitation sent to ${email}`);
+  const handleSendInvite = async () => {
+    if (!email.trim()) return;
+
+    setInviting(true);
+    const success = await inviteMember(email);
+    setInviting(false);
+
+    if (success) {
       setEmail('');
       onOpenChange(false);
     }
@@ -75,19 +75,19 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1"
               />
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="viewer">Viewer</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
-            <Button onClick={handleSendInvite} className="w-full" disabled={!email}>
-              Send Invitation
+            <p className="text-xs text-muted-foreground">
+              The user must have an account to be added
+            </p>
+            <Button onClick={handleSendInvite} className="w-full" disabled={!email || inviting}>
+              {inviting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Invitation'
+              )}
             </Button>
           </div>
 
@@ -107,7 +107,7 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
               Share invite link
             </Label>
             <div className="flex gap-2">
-              <Input value={shareLink} readOnly className="flex-1 text-sm" />
+              <Input value={shareLink} readOnly className="flex-1 text-sm bg-muted" />
               <Button variant="outline" onClick={handleCopyLink}>
                 {copied ? (
                   <Check className="h-4 w-4 text-column-done" />
@@ -117,7 +117,7 @@ export function InviteDialog({ open, onOpenChange }: InviteDialogProps) {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Anyone with this link can join as a Member
+              Share this link for others to sign up and join
             </p>
           </div>
         </div>
