@@ -1,12 +1,24 @@
 import { useState } from 'react';
 import { Task, ColumnId } from '@/types/kanban';
 import { columns } from '@/data/mockData';
-import { useKanban } from '@/hooks/useKanban';
+import { useProject } from '@/contexts/ProjectContext';
 import { KanbanColumn } from './KanbanColumn';
 import { TaskDialog } from './TaskDialog';
+import { Loader2 } from 'lucide-react';
 
 export function KanbanBoard() {
-  const { tasks, moveTask, addTask, updateTask, deleteTask, getTasksByColumn } = useKanban();
+  const { 
+    tasks, 
+    tasksLoading, 
+    moveTask, 
+    addTask, 
+    updateTask, 
+    deleteTask, 
+    getTasksByColumn,
+    teamMembers,
+    currentProject 
+  } = useProject();
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [defaultColumnId, setDefaultColumnId] = useState<ColumnId>('todo');
@@ -36,13 +48,28 @@ export function KanbanBoard() {
     setDialogOpen(true);
   };
 
-  const handleSaveTask = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'> | Partial<Task>) => {
-    if ('id' in taskData && taskData.id) {
-      updateTask(taskData.id, taskData);
-    } else {
-      addTask(taskData as Omit<Task, 'id' | 'createdAt' | 'updatedAt'>);
-    }
+  const handleSaveTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!currentProject) return;
+    await addTask({ ...taskData, project_id: currentProject.id });
   };
+
+  const handleUpdateTask = async (taskId: string, updates: Partial<Task>) => {
+    await updateTask(taskId, updates);
+  };
+
+  if (tasksLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const teamMembersForDialog = teamMembers.map((m) => ({
+    id: m.id,
+    name: m.name,
+    avatar: m.avatar,
+  }));
 
   return (
     <>
@@ -66,7 +93,9 @@ export function KanbanBoard() {
         onOpenChange={setDialogOpen}
         task={editingTask}
         defaultColumnId={defaultColumnId}
+        teamMembers={teamMembersForDialog}
         onSave={handleSaveTask}
+        onUpdate={handleUpdateTask}
       />
     </>
   );

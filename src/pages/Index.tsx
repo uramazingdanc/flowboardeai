@@ -1,23 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import { Header } from '@/components/layout/Header';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { TeamPanel } from '@/components/collaboration/TeamPanel';
 import { InviteDialog } from '@/components/collaboration/InviteDialog';
 import { TaskDialog } from '@/components/kanban/TaskDialog';
-import { useKanban } from '@/hooks/useKanban';
+import { useAuth } from '@/hooks/useAuth';
+import { useProject } from '@/contexts/ProjectContext';
 import { Task } from '@/types/kanban';
+import { Loader2 } from 'lucide-react';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { addTask, teamMembers, currentProject } = useProject();
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [teamPanelOpen, setTeamPanelOpen] = useState(false);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const { addTask } = useKanban();
 
-  const handleQuickAdd = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
-    addTask(taskData);
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  const handleQuickAdd = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    if (!currentProject) return;
+    await addTask({ ...taskData, project_id: currentProject.id });
   };
+
+  const teamMembersForDialog = teamMembers.map((m) => ({
+    id: m.id,
+    name: m.name,
+    avatar: m.avatar,
+  }));
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
@@ -50,6 +81,7 @@ const Index = () => {
       <TaskDialog
         open={quickAddOpen}
         onOpenChange={setQuickAddOpen}
+        teamMembers={teamMembersForDialog}
         onSave={handleQuickAdd}
       />
     </div>
