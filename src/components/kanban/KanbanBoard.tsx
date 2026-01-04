@@ -8,13 +8,12 @@ import { Loader2 } from 'lucide-react';
 
 export function KanbanBoard() {
   const { 
-    tasks, 
     tasksLoading, 
     moveTask, 
     addTask, 
     updateTask, 
     deleteTask, 
-    getTasksByColumn,
+    getFilteredTasksByColumn,
     teamMembers,
     currentProject 
   } = useProject();
@@ -78,7 +77,7 @@ export function KanbanBoard() {
           <KanbanColumn
             key={column.id}
             column={column}
-            tasks={getTasksByColumn(column.id)}
+            tasks={getFilteredTasksByColumn(column.id)}
             onAddTask={handleAddTask}
             onEditTask={handleEditTask}
             onDeleteTask={deleteTask}
