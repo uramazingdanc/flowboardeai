@@ -1,12 +1,57 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { AppSidebar } from '@/components/layout/AppSidebar';
+import { Header } from '@/components/layout/Header';
+import { KanbanBoard } from '@/components/kanban/KanbanBoard';
+import { TeamPanel } from '@/components/collaboration/TeamPanel';
+import { InviteDialog } from '@/components/collaboration/InviteDialog';
+import { TaskDialog } from '@/components/kanban/TaskDialog';
+import { useKanban } from '@/hooks/useKanban';
+import { Task } from '@/types/kanban';
 
 const Index = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [teamPanelOpen, setTeamPanelOpen] = useState(false);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const { addTask } = useKanban();
+
+  const handleQuickAdd = (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => {
+    addTask(taskData);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      {/* Sidebar */}
+      <AppSidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header
+          onAddTask={() => setQuickAddOpen(true)}
+          onInvite={() => setInviteDialogOpen(true)}
+        />
+
+        <div className="flex-1 flex overflow-hidden">
+          {/* Kanban Board */}
+          <main className="flex-1 overflow-x-auto">
+            <KanbanBoard />
+          </main>
+
+          {/* Team Panel */}
+          <TeamPanel open={teamPanelOpen} onClose={() => setTeamPanelOpen(false)} />
+        </div>
       </div>
+
+      {/* Dialogs */}
+      <InviteDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+      <TaskDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onSave={handleQuickAdd}
+      />
     </div>
   );
 };
