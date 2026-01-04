@@ -10,11 +10,11 @@ import {
 } from '@/components/ui/tooltip';
 
 interface HeaderProps {
-  onAddTask: () => void;
-  onInvite: () => void;
+  onAddTask?: () => void;
+  onInvite?: () => void;
 }
 
-export function Header({ onAddTask, onInvite }: HeaderProps) {
+export function Header({ onAddTask, onInvite }: HeaderProps = {}) {
   const { currentProject, teamMembers } = useProject();
 
   return (
@@ -92,7 +92,7 @@ export function Header({ onAddTask, onInvite }: HeaderProps) {
             <Share2 className="h-4 w-4" />
             Share
           </Button>
-          <Button size="sm" className="gap-2" onClick={onAddTask} disabled={!currentProject}>
+          <Button size="sm" className="gap-2" onClick={onAddTask} disabled={!currentProject || !onAddTask}>
             <Plus className="h-4 w-4" />
             Add Task
           </Button>
