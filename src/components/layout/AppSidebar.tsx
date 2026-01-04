@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   KanbanSquare,
@@ -34,14 +35,16 @@ interface AppSidebarProps {
 }
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: false },
-  { icon: KanbanSquare, label: 'Board', active: true },
-  { icon: Calendar, label: 'Timeline', active: false },
-  { icon: Users, label: 'Team', active: false },
-  { icon: Settings, label: 'Settings', active: false },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: KanbanSquare, label: 'Board', path: '/board' },
+  { icon: Calendar, label: 'Timeline', path: '/timeline' },
+  { icon: Users, label: 'Team', path: '/team' },
+  { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { profile, signOut } = useAuth();
   const { projects, currentProject, setCurrentProject, createProject, projectsLoading } = useProject();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -62,6 +65,13 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   };
 
   const projectColors = ['bg-primary', 'bg-column-progress', 'bg-column-review', 'bg-column-done'];
+
+  const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return location.pathname === '/' || location.pathname === '/dashboard';
+    }
+    return location.pathname === path;
+  };
 
   return (
     <>
@@ -97,9 +107,10 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
             {navItems.map((item) => (
               <li key={item.label}>
                 <button
+                  onClick={() => navigate(item.path)}
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-                    item.active
+                    isActive(item.path)
                       ? 'bg-sidebar-accent text-sidebar-foreground'
                       : 'text-sidebar-muted hover:text-sidebar-foreground hover:bg-sidebar-accent/50'
                   )}
