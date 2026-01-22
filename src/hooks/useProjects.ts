@@ -42,8 +42,8 @@ export function useProjects() {
       .insert({
         name,
         description,
-        owner_id: user.id,
-      })
+        owner_id: user.id, // Required by types, but trigger will override to auth.uid()
+      } as any)
       .select()
       .single();
 
